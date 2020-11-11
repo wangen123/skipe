@@ -18,12 +18,12 @@ public class RedisUtils {
     private Redisson redisson;
 
 
-    public void set(String key,String value){
+    public void set(String key,Object value){
         redisTemplate.opsForValue().set(key,value);
     }
 
-    public String get(String key){
-        return (String) redisTemplate.opsForValue().get(key);
+    public Object get(String key){
+        return redisTemplate.opsForValue().get(key);
     }
 
     public void expire(String key, Long timeout){

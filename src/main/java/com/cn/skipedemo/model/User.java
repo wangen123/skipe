@@ -8,6 +8,10 @@ import javax.persistence.Table;
 @Table(name = "cof_user")
 public class User {
 
+    public User(String name){
+        this.name = name;
+    }
+
     @Id
     private int id;
 
