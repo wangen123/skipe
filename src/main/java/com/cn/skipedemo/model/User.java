@@ -3,11 +3,13 @@ package com.cn.skipedemo.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "cof_user")
-public class User {
+public class User implements Serializable {
 
+    public User(){}
     public User(String name){
         this.name = name;
     }

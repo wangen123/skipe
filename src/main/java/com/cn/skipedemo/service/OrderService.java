@@ -2,21 +2,32 @@ package com.cn.skipedemo.service;
 
 import com.cn.skipedemo.model.Commodity;
 import com.cn.skipedemo.model.Message;
+import com.cn.skipedemo.model.Order;
 import com.cn.skipedemo.model.User;
+import com.cn.skipedemo.repo.OrderRepository;
 import com.cn.skipedemo.util.RedisUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
 @Transactional
 public class OrderService {
-
+    private final static Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final static String lockKey = "redis_lock_key";
+    private final static AtomicInteger integer = new AtomicInteger(0);
+    private static ReentrantLock lock = new ReentrantLock();
 
     @Autowired
     private RedisUtils redisUtils;
@@ -25,10 +36,17 @@ public class OrderService {
     private CommodityService commodityService;
 
     @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
     private Redisson redisson;
 
     @Transactional
-    public Message order(String username, String commodityName, String number, Message message) {
+    public Message order(String username, String commodityName, String number, Message message) throws InterruptedException {
+        Date date = new Date();
+        //针对订单这个操作需要做幂等校验
+        Order order = new Order();
+
         //首先校验用户是否登录：
         //校验这部分可以考虑做成职责链来进行处理
         User user = (User) redisUtils.get(username);
@@ -37,10 +55,7 @@ public class OrderService {
             message.setMessage("the number is more than one");
             return message;
         }
-        //这一步可以进行优化，不直接查库
-
-        RLock rlock = redisson.getLock(lockKey);
-        rlock.lock(5, TimeUnit.SECONDS);
+        lock.lock();
         try{
             Commodity commodity = commodityService.findByName(commodityName);
             if(commodity.getNumber() == 0){
@@ -48,12 +63,21 @@ public class OrderService {
                 message.setMessage("the commodity is all saled");
                 return message;
             }
+            //这一步可以进行优化，不直接查库
             //这一步开始进行下单减库存
             //下单的过程应该需要加锁这里使用redis 分布式锁
             commodity.setNumber(commodity.getNumber() - 1);
             commodityService.updateCommodity(commodity);
-        }finally {
-            rlock.unlock();
+            //记录订单信息
+            order.setCommodityId(commodity.getId());
+            order.setCost(commodity.getCommodityPrice());
+            order.setCreateTime(date);
+            order.setUserId(123123);
+            order.setId(integer.incrementAndGet());
+            order.setSerialNumber(String.valueOf(Math.random()));
+            orderRepository.save(order);
+        } finally {
+            lock.unlock();
         }
         return message;
     }

@@ -28,12 +28,12 @@ public class UserOptionService {
     @Transactional
     public Message createUser(String name) {
         for(int i=0;i<1000;i++){
-            User user = new User(name);
+            User user = new User(name + atomicInteger);
             user.setId(atomicInteger.incrementAndGet());
             user.setAddress("china");
             user.setEmail("123456@163.com");
             user.setPhone("131215" + atomicInteger);
-            user.setIdCard("41038119925815156156156");
+            user.setIdCard("4103811992581515" + atomicInteger);
             redisUtils.set(name,user);
             userRepo.save(user);
         }

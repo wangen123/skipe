@@ -3,12 +3,15 @@ package com.cn.skipedemo.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
 @Table(name = "cof_order")
-public class Order {
+public class Order implements Serializable {
+
+    public Order(){}
 
     @Id
     private int id;
@@ -23,6 +26,7 @@ public class Order {
 
     private Date updateTime;
 
+    private String serialNumber;
 
     public int getId() {
         return id;
@@ -70,5 +74,13 @@ public class Order {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 }

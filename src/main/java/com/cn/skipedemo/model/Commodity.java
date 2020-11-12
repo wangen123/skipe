@@ -4,11 +4,14 @@ package com.cn.skipedemo.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "cof_commodity")
-public class Commodity {
+public class Commodity implements Serializable {
+
+    public Commodity(){}
 
     @Id
     private int id;
@@ -50,4 +53,6 @@ public class Commodity {
     public void setNumber(int number) {
         this.number = number;
     }
+
+
 }

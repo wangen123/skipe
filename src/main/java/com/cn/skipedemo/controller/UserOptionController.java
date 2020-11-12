@@ -17,7 +17,7 @@ public class UserOptionController {
 
     @RequestMapping(value = "/create/{username}")
     public Message createUser(@PathVariable("username") String name) {
-        Message message = new Message();
+        Message message = new Message("200","success");
         service.createUser(name);
         return message;
     }

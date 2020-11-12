@@ -27,7 +27,7 @@ public class OrderController {
     @RequestMapping(value = "/order/{username}/{commodityName}/{number}")
     public Message order(@PathVariable("username") String username,
                          @PathVariable("commodityName") String commodityName,
-                         @PathVariable("number")String number){
+                         @PathVariable("number")String number) throws InterruptedException {
         //首先判断用户是否登录，假定用户登录是存在redis中
         Message message = new Message("200","success");
         message = orderService.order(username,commodityName,number,message);
