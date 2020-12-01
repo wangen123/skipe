@@ -1,13 +1,13 @@
 package com.cn.bussinessserverr.service;
 
 import com.alibaba.druid.support.json.JSONUtils;
+import com.cn.bussinessserverr.config.KafkaProducer;
 import com.cn.bussinessserverr.model.Commodity;
 import com.cn.bussinessserverr.model.Message;
 import com.cn.bussinessserverr.model.Order;
 import com.cn.bussinessserverr.model.User;
 import com.cn.bussinessserverr.repo.OrderRepository;
 import com.cn.bussinessserverr.util.RedisUtils;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +37,10 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private KafkaProducer kafkaProducer;
+    private Redisson redisson;
 
     @Autowired
-    private Redisson redisson;
+    private KafkaProducer kafkaProducer;
 
     @Transactional
     public Message order(String username, String commodityName, String number, Message message) throws InterruptedException {
@@ -78,10 +78,7 @@ public class OrderService {
             order.setSerialNumber(String.valueOf(Math.random()));
             orderRepository.save(order);
             //将生成的订单信息发送到订单服务
-            String messageInfo = JSONUtils.toJSONString(order);
-
-
-
+            kafkaProducer.send(order);
         } finally {
             lock.unlock();
         }
